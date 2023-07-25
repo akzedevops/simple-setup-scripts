@@ -6,14 +6,11 @@ if [[ "$EUID" -ne 0 ]]; then
   exit 1
 fi
 
-# Check if the username argument is provided
-if [[ -z "$1" ]]; then
-  echo "Usage: $0 <new_username>"
-  exit 1
-fi
+# Prompt for the new username
+read -p "Enter the new username: " new_username
 
-# Set the new username from the provided argument
-new_username="$1"
+# Prompt for the sudo option
+read -p "Do you want to add the user to the sudo group? (yes/no): " sudo_option
 
 # Step 1: Create the new user account
 echo "Creating user account..."
@@ -33,5 +30,11 @@ echo "Disabling password login for the new user..."
 sed -i -e '/^PasswordAuthentication/s/^/#/' /etc/ssh/sshd_config
 echo "PasswordAuthentication no" >> /etc/ssh/sshd_config
 service ssh restart
+
+# Step 4: Add the new user to the sudo group if the option is yes
+if [[ "$sudo_option" == "yes" ]]; then
+  echo "Adding user to sudo group..."
+  usermod -aG sudo "$new_username"
+fi
 
 echo "User account setup complete!"
